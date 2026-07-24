@@ -19,8 +19,14 @@ struct NewExpenseView: View {
     @State private var note = ""
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var receiptImageData: Data?
+    @State private var validationMessage: String?
+    @State private var saveErrorMessage: String?
 
     private let categories = ["Uniforms", "Tournaments", "Facilities", "Equipment", "Other"]
+
+    private var trimmedTitle: String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     var body: some View {
         NavigationStack {
@@ -32,6 +38,11 @@ struct NewExpenseView: View {
                     }
                     TextField("Amount", text: $amountText)
                         .keyboardType(.decimalPad)
+                    if let validationMessage {
+                        Text(validationMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                     DatePicker("Date", selection: $date, displayedComponents: .date)
                     TextField("Note", text: $note, axis: .vertical)
                 }
@@ -43,6 +54,7 @@ struct NewExpenseView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(maxHeight: 160)
+                                .accessibilityLabel("Receipt photo attached")
                         } else {
                             Label("Attach Receipt Photo", systemImage: "camera")
                         }
@@ -56,7 +68,7 @@ struct NewExpenseView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
-                        .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || Decimal(string: amountText) == nil)
+                        .disabled(trimmedTitle.isEmpty)
                 }
             }
             .onChange(of: selectedPhoto) { _, newItem in
@@ -66,15 +78,40 @@ struct NewExpenseView: View {
                     }
                 }
             }
+            .alert("Couldn\u{2019}t Save Expense", isPresented: .constant(saveErrorMessage != nil), presenting: saveErrorMessage) { _ in
+                Button("OK") { saveErrorMessage = nil }
+            } message: { message in
+                Text(message)
+            }
         }
     }
 
     private func save() {
-        guard let amount = Decimal(string: amountText) else { return }
-        let expense = Expense(title: title, category: category, amount: amount, date: date, note: note, receiptImageData: receiptImageData)
-        context.insert(expense)
-        try? context.save()
-        dismiss()
+        switch CurrencyInput.parse(amountText) {
+        case .failure(let error):
+            validationMessage = error.errorDescription
+            return
+        case .success(let amount):
+            validationMessage = nil
+
+            let expense = Expense(
+                title: trimmedTitle,
+                category: category,
+                amount: amount,
+                date: date,
+                note: note.trimmingCharacters(in: .whitespacesAndNewlines),
+                receiptImageData: receiptImageData
+            )
+            context.insert(expense)
+
+            do {
+                try context.save()
+                dismiss()
+            } catch {
+                context.rollback()
+                saveErrorMessage = error.localizedDescription
+            }
+        }
     }
 }
 

@@ -6,11 +6,14 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import os
 
 struct ExpensesListView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @State private var isPresentingNewExpense = false
+
+    private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "ExpensesListView")
 
     private var totalExpenses: Decimal {
         expenses.reduce(Decimal(0)) { $0 + $1.amount }
@@ -62,6 +65,12 @@ struct ExpensesListView: View {
         for index in offsets {
             context.delete(expenses[index])
         }
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            Self.logger.error("Failed to delete expense: \(error.localizedDescription)")
+        }
     }
 }
 
@@ -104,6 +113,9 @@ private struct ExpenseRow: View {
             }
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(expense.title), \(expense.category)")
+        .accessibilityValue("\(expense.amount.currencyString) on \(expense.date.formatted(date: .abbreviated, time: .omitted))")
     }
 }
 

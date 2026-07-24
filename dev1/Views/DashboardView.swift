@@ -94,6 +94,7 @@ private struct StatRow: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(tint)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

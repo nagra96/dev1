@@ -26,6 +26,9 @@ struct CampaignRow: View {
             }
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(campaign.title), due \(campaign.dueDate.formatted(date: .abbreviated, time: .omitted))")
+        .accessibilityValue("\(campaign.totalCollected.currencyString) of \(campaign.totalExpected.currencyString) collected, \(campaign.unpaidCount) unpaid")
     }
 }
 

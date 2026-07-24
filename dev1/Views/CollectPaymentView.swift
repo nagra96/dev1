@@ -17,19 +17,21 @@ struct CollectPaymentView: View {
         case card = "Card"
         case ach = "ACH Bank Transfer"
         var id: String { rawValue }
-    }
 
-    private var platformFee: Decimal {
-        switch method {
-        case .card:
-            return payment.balanceRemaining * Decimal(0.029) + Decimal(0.30)
-        case .ach:
-            return payment.balanceRemaining * Decimal(0.008)
+        var calculatorMethod: FeeCalculator.Method {
+            switch self {
+            case .card: return .card
+            case .ach: return .ach
+            }
         }
     }
 
+    private var platformFee: Decimal {
+        FeeCalculator.processingFee(on: payment.balanceRemaining, method: method.calculatorMethod)
+    }
+
     private var totalCharged: Decimal {
-        passFeeToFamily ? payment.balanceRemaining + platformFee : payment.balanceRemaining
+        FeeCalculator.totalCharge(forBalance: payment.balanceRemaining, method: method.calculatorMethod, passFeeToPayer: passFeeToFamily)
     }
 
     var body: some View {
@@ -92,6 +94,7 @@ struct CollectPaymentView: View {
                         }
                     }
                     .disabled(isProcessing)
+                    .accessibilityLabel(isProcessing ? "Processing payment" : "Charge \(totalCharged.currencyString)")
                 }
             }
         }

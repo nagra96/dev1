@@ -32,9 +32,11 @@ struct PaymentRow: View {
                     Button("Remind", action: onRemind)
                         .buttonStyle(.bordered)
                         .controlSize(.small)
+                        .accessibilityLabel("Send reminder to \(payment.family?.parentName ?? "family")")
                     Button("Collect", action: onCollect)
                         .buttonStyle(.borderedProminent)
                         .controlSize(.small)
+                        .accessibilityLabel("Collect \(payment.balanceRemaining.currencyString) from \(payment.family?.parentName ?? "family")")
                 }
             }
 

@@ -5,11 +5,15 @@
 
 import SwiftUI
 import SwiftData
+import os
 
 struct FamiliesListView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \FamilyMember.parentName) private var families: [FamilyMember]
     @State private var isPresentingNewFamily = false
+    @State private var pendingDeleteOffsets: IndexSet?
+
+    private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "FamiliesListView")
 
     var body: some View {
         List {
@@ -25,7 +29,7 @@ struct FamiliesListView: View {
                         FamilyRow(family: family)
                     }
                 }
-                .onDelete(perform: deleteFamilies)
+                .onDelete { pendingDeleteOffsets = $0 }
             }
         }
         .navigationDestination(for: FamilyMember.self) { family in
@@ -44,11 +48,34 @@ struct FamiliesListView: View {
         .sheet(isPresented: $isPresentingNewFamily) {
             NewFamilyView()
         }
+        .confirmationDialog(
+            "Remove Family?",
+            isPresented: .constant(pendingDeleteOffsets != nil),
+            titleVisibility: .visible
+        ) {
+            Button("Remove Family and Fee History", role: .destructive) {
+                if let offsets = pendingDeleteOffsets {
+                    deleteFamilies(at: offsets)
+                }
+                pendingDeleteOffsets = nil
+            }
+            Button("Cancel", role: .cancel) {
+                pendingDeleteOffsets = nil
+            }
+        } message: {
+            Text("This permanently deletes the family and every fee balance and payment record tied to them.")
+        }
     }
 
     private func deleteFamilies(at offsets: IndexSet) {
         for index in offsets {
             context.delete(families[index])
+        }
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            Self.logger.error("Failed to delete family: \(error.localizedDescription)")
         }
     }
 }
@@ -73,6 +100,9 @@ private struct FamilyRow: View {
                     .foregroundStyle(.green)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(family.parentName), \(family.playerName)")
+        .accessibilityValue(family.totalOwed > 0 ? "\(family.totalOwed.currencyString) due" : "Paid up")
     }
 }
 

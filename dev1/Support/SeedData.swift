@@ -5,12 +5,22 @@
 
 import Foundation
 import SwiftData
+import os
 
 enum SeedData {
+    private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "SeedData")
+
     @MainActor
     static func seedIfNeeded(context: ModelContext) {
         let descriptor = FetchDescriptor<FamilyMember>()
-        guard let existingCount = try? context.fetchCount(descriptor), existingCount == 0 else { return }
+        let existingCount: Int
+        do {
+            existingCount = try context.fetchCount(descriptor)
+        } catch {
+            logger.error("Failed to check for existing data before seeding: \(error.localizedDescription)")
+            return
+        }
+        guard existingCount == 0 else { return }
 
         let families = [
             FamilyMember(parentName: "Maria Chen", playerName: "Ella Chen", email: "maria@example.com", phone: "555-0101"),
@@ -57,6 +67,10 @@ enum SeedData {
         ]
         expenses.forEach { context.insert($0) }
 
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            logger.error("Failed to save seed data: \(error.localizedDescription)")
+        }
     }
 }

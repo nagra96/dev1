@@ -6,12 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct dev1App: App {
+    let container: ModelContainer
+
+    init() {
+        do {
+            container = try ModelContainer(for: FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self)
+            SeedData.seedIfNeeded(context: container.mainContext)
+        } catch {
+            fatalError("Failed to create ModelContainer: \(error)")
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootTabView()
         }
+        .modelContainer(container)
     }
 }

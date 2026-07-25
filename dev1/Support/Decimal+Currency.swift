@@ -7,6 +7,6 @@ import Foundation
 
 extension Decimal {
     var currencyString: String {
-        NSDecimalNumber(decimal: self).formatted(.currency(code: "USD"))
+        formatted(.currency(code: "USD"))
     }
 }

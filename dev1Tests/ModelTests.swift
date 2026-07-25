@@ -3,6 +3,7 @@
 //  dev1Tests
 //
 
+import Foundation
 import Testing
 import SwiftData
 @testable import dev1

@@ -10,6 +10,9 @@ struct SeasonReportView: View {
     @Query private var campaigns: [FeeCampaign]
     @Query private var expenses: [Expense]
     @Query private var families: [FamilyMember]
+    @Query private var profiles: [TeamProfile]
+
+    private var profile: TeamProfile? { profiles.first }
 
     private var totalCollected: Decimal { campaigns.reduce(Decimal(0)) { $0 + $1.totalCollected } }
     private var totalExpected: Decimal { campaigns.reduce(Decimal(0)) { $0 + $1.totalExpected } }
@@ -30,10 +33,16 @@ struct SeasonReportView: View {
     /// the data is never gated behind the visual layer.
     private var reportText: String {
         var lines = [
-            "TeamTreasury \u{2014} Season Financial Report",
-            Date.now.formatted(date: .abbreviated, time: .omitted),
-            ""
+            "\(profile?.displayTitle ?? "Team") \u{2014} Season Financial Report"
         ]
+        if let subtitle = profile?.displaySubtitle, !subtitle.isEmpty {
+            lines.append(subtitle)
+        }
+        lines.append(Date.now.formatted(date: .abbreviated, time: .omitted))
+        if let treasurer = profile?.treasurerName, !treasurer.isEmpty {
+            lines.append("Prepared by \(treasurer)")
+        }
+        lines.append("")
 
         lines.append("INCOME")
         for campaign in campaigns.sorted(by: { $0.dueDate < $1.dueDate }) {
@@ -96,7 +105,7 @@ struct SeasonReportView: View {
 
     private var heroCard: some View {
         VStack(alignment: .leading, spacing: Theme.Space.sm) {
-            Text("Net balance")
+            Text(profile?.displayTitle ?? "Net balance")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white.opacity(0.85))
             Text(netBalance.currencyString)
@@ -160,5 +169,5 @@ struct SeasonReportView: View {
 
 #Preview {
     NavigationStack { SeasonReportView() }
-        .modelContainer(for: [FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
+        .modelContainer(for: [TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
 }

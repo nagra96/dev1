@@ -19,6 +19,9 @@ struct RootTabView: View {
 
             NavigationStack { ExpensesListView() }
                 .tabItem { Label("Expenses", systemImage: "receipt.fill") }
+
+            NavigationStack { SettingsView() }
+                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }
         .tint(Theme.accent)
     }
@@ -26,5 +29,6 @@ struct RootTabView: View {
 
 #Preview {
     RootTabView()
-        .modelContainer(for: [FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
+        .environment(AppLock())
+        .modelContainer(for: [TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
 }

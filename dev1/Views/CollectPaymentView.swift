@@ -9,6 +9,8 @@ struct CollectPaymentView: View {
     @Bindable var payment: Payment
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage(PreferenceKey.passFeeToFamilyDefault) private var passFeeDefault = true
+
     @State private var method: PaymentMethod = .card
     @State private var passFeeToFamily = true
     @State private var isProcessing = false
@@ -52,6 +54,7 @@ struct CollectPaymentView: View {
             .background(Theme.plane)
             .navigationTitle("Collect Payment")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { passFeeToFamily = passFeeDefault }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

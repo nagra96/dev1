@@ -102,5 +102,5 @@ struct NewCampaignView: View {
 
 #Preview {
     NewCampaignView()
-        .modelContainer(for: [FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
+        .modelContainer(for: [TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
 }

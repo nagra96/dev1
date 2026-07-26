@@ -5,6 +5,29 @@ loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — app fundamentals
+- **Onboarding flow.** First launch now collects team, club, sport, season, and
+  treasurer details (`TeamProfile`) instead of dropping the user into an app
+  full of unexplained data. Sample data is opt-in from this screen and can be
+  loaded or erased later from Settings — previously the app silently seeded
+  itself, which in a financial app makes it impossible to tell which balances
+  are real.
+- **Settings tab** covering team details, account, security, collection
+  defaults, data export/erase, and an About screen.
+- **App Lock** using `LocalAuthentication` — Face ID / Touch ID / device
+  passcode, engaging whenever the app leaves the foreground (including the
+  app-switcher snapshot, so balances aren't visible in multitasking).
+  Uses `.deviceOwnerAuthentication` so an unavailable or locked-out biometric
+  always falls back to the passcode rather than stranding the user.
+- **CSV export** for family balances, payments, and expenses, shared as real
+  `.csv` files. With no backend and no backup, this is currently the only way
+  to get data off the device or hand the books to next season's treasurer.
+- **Erase all data**, behind a destructive confirmation.
+- **Search** in Families (parent, player, email) and Expenses (title, category,
+  note).
+- The season report now carries the real team name, season, and treasurer
+  instead of a hardcoded title.
+
 ### Added
 - Unit test target (`dev1Tests`) using Swift Testing, covering the model
   layer (`FamilyMember`, `FeeCampaign`, `Payment`) and pure business logic

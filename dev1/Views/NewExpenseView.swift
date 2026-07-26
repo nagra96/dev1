@@ -117,5 +117,5 @@ struct NewExpenseView: View {
 
 #Preview {
     NewExpenseView()
-        .modelContainer(for: [FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
+        .modelContainer(for: [TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
 }

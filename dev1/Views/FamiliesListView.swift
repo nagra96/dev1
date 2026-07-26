@@ -12,11 +12,22 @@ struct FamiliesListView: View {
     @Query(sort: \FamilyMember.parentName) private var families: [FamilyMember]
     @State private var isPresentingNewFamily = false
     @State private var pendingDeleteOffsets: IndexSet?
+    @State private var searchText = ""
 
     private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "FamiliesListView")
 
     private var totalOutstanding: Decimal {
         families.reduce(Decimal(0)) { $0 + $1.totalOwed }
+    }
+
+    private var filteredFamilies: [FamilyMember] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return families }
+        return families.filter {
+            $0.parentName.localizedCaseInsensitiveContains(query)
+                || $0.playerName.localizedCaseInsensitiveContains(query)
+                || $0.email.localizedCaseInsensitiveContains(query)
+        }
     }
 
     var body: some View {
@@ -54,7 +65,7 @@ struct FamiliesListView: View {
                                                   bottom: Theme.Space.sm, trailing: Theme.Space.lg))
                     }
 
-                    ForEach(families) { family in
+                    ForEach(filteredFamilies) { family in
                         ZStack {
                             NavigationLink(value: family) { EmptyView() }.opacity(0)
                             FamilyRow(family: family)
@@ -68,6 +79,12 @@ struct FamiliesListView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .searchable(text: $searchText, prompt: "Search parent, player, or email")
+                .overlay {
+                    if filteredFamilies.isEmpty && !searchText.isEmpty {
+                        ContentUnavailableView.search(text: searchText)
+                    }
+                }
             }
         }
         .background(Theme.plane)
@@ -107,9 +124,11 @@ struct FamiliesListView: View {
     }
 
     private func deleteFamilies(at offsets: IndexSet) {
-        for index in offsets {
-            context.delete(families[index])
-        }
+        // Offsets index into the filtered array the user is actually looking
+        // at — resolving them against `families` would delete the wrong row
+        // whenever a search is active.
+        let targets = offsets.map { filteredFamilies[$0] }
+        targets.forEach { context.delete($0) }
         do {
             try context.save()
         } catch {
@@ -159,5 +178,5 @@ private struct FamilyRow: View {
 
 #Preview {
     NavigationStack { FamiliesListView() }
-        .modelContainer(for: [FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
+        .modelContainer(for: [TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
 }

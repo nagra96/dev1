@@ -12,8 +12,19 @@ struct ExpensesListView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @State private var isPresentingNewExpense = false
+    @State private var searchText = ""
 
     private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "ExpensesListView")
+
+    private var filteredExpenses: [Expense] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return expenses }
+        return expenses.filter {
+            $0.title.localizedCaseInsensitiveContains(query)
+                || $0.category.localizedCaseInsensitiveContains(query)
+                || $0.note.localizedCaseInsensitiveContains(query)
+        }
+    }
 
     private var totalExpenses: Decimal {
         expenses.reduce(Decimal(0)) { $0 + $1.amount }
@@ -58,7 +69,7 @@ struct ExpensesListView: View {
                     }
 
                     Section {
-                        ForEach(expenses) { expense in
+                        ForEach(filteredExpenses) { expense in
                             ExpenseRow(expense: expense)
                                 .plainRow()
                         }
@@ -72,6 +83,7 @@ struct ExpensesListView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .searchable(text: $searchText, prompt: "Search title, category, or note")
             }
         }
         .background(Theme.plane)
@@ -91,9 +103,9 @@ struct ExpensesListView: View {
     }
 
     private func deleteExpenses(at offsets: IndexSet) {
-        for index in offsets {
-            context.delete(expenses[index])
-        }
+        // Resolve against the filtered array the user sees, not the full one.
+        let targets = offsets.map { filteredExpenses[$0] }
+        targets.forEach { context.delete($0) }
         do {
             try context.save()
         } catch {
@@ -179,5 +191,5 @@ private struct ExpenseRow: View {
 
 #Preview {
     NavigationStack { ExpensesListView() }
-        .modelContainer(for: [FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
+        .modelContainer(for: [TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
 }

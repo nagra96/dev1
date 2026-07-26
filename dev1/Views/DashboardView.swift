@@ -211,5 +211,5 @@ struct DashboardView: View {
 
 #Preview {
     NavigationStack { DashboardView() }
-        .modelContainer(for: [FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
+        .modelContainer(for: [TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self], inMemory: true)
 }

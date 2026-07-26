@@ -11,7 +11,7 @@ import SwiftData
 @MainActor
 struct ModelTests {
     private func makeContext() throws -> ModelContext {
-        let schema = Schema([FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self])
+        let schema = Schema([TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         return ModelContext(container)

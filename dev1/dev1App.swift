@@ -13,9 +13,11 @@ struct dev1App: App {
     let container: ModelContainer
 
     init() {
+        PreferenceDefault.registerAll()
         do {
-            container = try ModelContainer(for: FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self)
-            SeedData.seedIfNeeded(context: container.mainContext)
+            container = try ModelContainer(
+                for: TeamProfile.self, FamilyMember.self, FeeCampaign.self, Payment.self, Expense.self
+            )
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
@@ -23,7 +25,7 @@ struct dev1App: App {
 
     var body: some Scene {
         WindowGroup {
-            RootTabView()
+            RootView()
         }
         .modelContainer(container)
     }

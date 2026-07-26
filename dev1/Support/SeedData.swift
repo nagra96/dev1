@@ -7,21 +7,17 @@ import Foundation
 import SwiftData
 import os
 
+/// Sample data for trying the app out.
+///
+/// This is now opt-in from onboarding (and re-loadable from Settings) rather
+/// than something the app does to itself on first launch. Silently seeding a
+/// financial app is a bad idea: the user can't tell which balances are real,
+/// and "why does it say Maria Chen owes $75" is a terrible first impression.
 enum SeedData {
     private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "SeedData")
 
     @MainActor
-    static func seedIfNeeded(context: ModelContext) {
-        let descriptor = FetchDescriptor<FamilyMember>()
-        let existingCount: Int
-        do {
-            existingCount = try context.fetchCount(descriptor)
-        } catch {
-            logger.error("Failed to check for existing data before seeding: \(error.localizedDescription)")
-            return
-        }
-        guard existingCount == 0 else { return }
-
+    static func loadSample(context: ModelContext) {
         let families = [
             FamilyMember(parentName: "Maria Chen", playerName: "Ella Chen", email: "maria@example.com", phone: "555-0101"),
             FamilyMember(parentName: "David Ortiz", playerName: "Sam Ortiz", email: "david@example.com", phone: "555-0102"),
@@ -61,16 +57,23 @@ enum SeedData {
         }
 
         let expenses = [
-            Expense(title: "Uniform Order", category: "Uniforms", amount: 480, date: calendar.date(byAdding: .day, value: -10, to: .now) ?? .now, note: "12 jerseys from TeamSports Co."),
-            Expense(title: "Field Rental", category: "Facilities", amount: 220, date: calendar.date(byAdding: .day, value: -5, to: .now) ?? .now, note: "March practice sessions"),
-            Expense(title: "Tournament Registration", category: "Tournaments", amount: 300, date: calendar.date(byAdding: .day, value: -2, to: .now) ?? .now, note: "Spring regional entry")
+            Expense(title: "Uniform Order", category: "Uniforms", amount: 480,
+                    date: calendar.date(byAdding: .day, value: -10, to: .now) ?? .now,
+                    note: "12 jerseys from TeamSports Co."),
+            Expense(title: "Field Rental", category: "Facilities", amount: 220,
+                    date: calendar.date(byAdding: .day, value: -5, to: .now) ?? .now,
+                    note: "March practice sessions"),
+            Expense(title: "Tournament Registration", category: "Tournaments", amount: 300,
+                    date: calendar.date(byAdding: .day, value: -2, to: .now) ?? .now,
+                    note: "Spring regional entry")
         ]
         expenses.forEach { context.insert($0) }
 
         do {
             try context.save()
         } catch {
-            logger.error("Failed to save seed data: \(error.localizedDescription)")
+            context.rollback()
+            logger.error("Failed to save sample data: \(error.localizedDescription)")
         }
     }
 }

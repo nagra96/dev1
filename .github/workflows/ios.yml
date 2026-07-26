@@ -25,20 +25,58 @@ jobs:
         with:
           xcode-version: "16.4"
 
+      - name: Show available simulator runtimes
+        run: |
+          xcrun simctl list runtimes || true
+          xcrun simctl list devices available || true
+
+      # Compilation is verified against the generic simulator destination, which
+      # resolves without a concrete booted device. Runner images have shipped
+      # without a pre-installed iOS runtime before, and pinning a device name
+      # here (e.g. "iPhone 16") turns that into a build failure that looks like
+      # a code failure. Keep this step device-independent.
       - name: Build
         run: |
           xcodebuild build \
             -project dev1.xcodeproj \
             -scheme dev1 \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      # Running tests does need a real simulator, so discover one rather than
+      # assuming a name, and download a runtime only if the image has none.
+      - name: Resolve a simulator
+        id: sim
+        run: |
+          find_udid() {
+            xcrun simctl list devices available \
+              | grep "iPhone" \
+              | grep -Eio '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}' \
+              | head -1
+          }
+
+          UDID="$(find_udid)"
+
+          if [ -z "$UDID" ]; then
+            echo "No iOS simulator on this image; downloading a runtime (this is slow)."
+            xcodebuild -downloadPlatform iOS || true
+            UDID="$(find_udid)"
+          fi
+
+          if [ -z "$UDID" ]; then
+            echo "::error::Could not provision an iOS simulator on this runner."
+            exit 1
+          fi
+
+          echo "Using simulator $UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
       - name: Test
         run: |
           xcodebuild test \
             -project dev1.xcodeproj \
             -scheme dev1 \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 

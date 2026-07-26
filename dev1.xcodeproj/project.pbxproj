@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		A99480742E2C9C9F00EE3D91 /* dev1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dev1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B99480912E2C9CA000EE3D91 /* dev1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = dev1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +17,32 @@
 			path = dev1;
 			sourceTree = "<group>";
 		};
+		B99480952E2C9CA000EE3D91 /* dev1Tests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = dev1Tests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXContainerItemProxy section */
+		B99480972E2C9CA000EE3D91 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A994806C2E2C9C9F00EE3D91 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A99480732E2C9C9F00EE3D91;
+			remoteInfo = dev1;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A99480712E2C9C9F00EE3D91 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B99480932E2C9CA000EE3D91 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				A99480762E2C9C9F00EE3D91 /* dev1 */,
+				B99480952E2C9CA000EE3D91 /* dev1Tests */,
 				A99480752E2C9C9F00EE3D91 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				A99480742E2C9C9F00EE3D91 /* dev1.app */,
+				B99480912E2C9CA000EE3D91 /* dev1Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = A99480742E2C9C9F00EE3D91 /* dev1.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B99480902E2C9CA000EE3D91 /* dev1Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B99480982E2C9CA000EE3D91 /* Build configuration list for PBXNativeTarget "dev1Tests" */;
+			buildPhases = (
+				B99480922E2C9CA000EE3D91 /* Sources */,
+				B99480932E2C9CA000EE3D91 /* Frameworks */,
+				B99480942E2C9CA000EE3D91 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B99480962E2C9CA000EE3D91 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B99480952E2C9CA000EE3D91 /* dev1Tests */,
+			);
+			name = dev1Tests;
+			packageProductDependencies = (
+			);
+			productName = dev1Tests;
+			productReference = B99480912E2C9CA000EE3D91 /* dev1Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					A99480732E2C9C9F00EE3D91 = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					B99480902E2C9CA000EE3D91 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = A99480732E2C9C9F00EE3D91;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				A99480732E2C9C9F00EE3D91 /* dev1 */,
+				B99480902E2C9CA000EE3D91 /* dev1Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A99480722E2C9C9F00EE3D91 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B99480942E2C9CA000EE3D91 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B99480922E2C9CA000EE3D91 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B99480962E2C9CA000EE3D91 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A99480732E2C9C9F00EE3D91 /* dev1 */;
+			targetProxy = B99480972E2C9CA000EE3D91 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A994807D2E2C9CA000EE3D91 /* Debug */ = {
@@ -256,6 +331,7 @@
 				DEVELOPMENT_TEAM = S8UMS5TQ89;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Unlock TeamTreasury to view your team's finances.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +360,7 @@
 				DEVELOPMENT_TEAM = S8UMS5TQ89;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Unlock TeamTreasury to view your team's finances.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -299,6 +376,44 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B99480992E2C9CA000EE3D91 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = S8UMS5TQ89;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dato.com.karan.dev1Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/dev1.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/dev1";
+			};
+			name = Debug;
+		};
+		B994809A2E2C9CA000EE3D91 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = S8UMS5TQ89;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dato.com.karan.dev1Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/dev1.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/dev1";
 			};
 			name = Release;
 		};
@@ -319,6 +434,15 @@
 			buildConfigurations = (
 				A99480802E2C9CA000EE3D91 /* Debug */,
 				A99480812E2C9CA000EE3D91 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B99480982E2C9CA000EE3D91 /* Build configuration list for PBXNativeTarget "dev1Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B99480992E2C9CA000EE3D91 /* Debug */,
+				B994809A2E2C9CA000EE3D91 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

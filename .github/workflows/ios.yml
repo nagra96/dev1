@@ -1,0 +1,89 @@
+name: iOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.4"
+
+      - name: Show available simulator runtimes
+        run: |
+          xcrun simctl list runtimes || true
+          xcrun simctl list devices available || true
+
+      # Compilation is verified against the generic simulator destination, which
+      # resolves without a concrete booted device. Runner images have shipped
+      # without a pre-installed iOS runtime before, and pinning a device name
+      # here (e.g. "iPhone 16") turns that into a build failure that looks like
+      # a code failure. Keep this step device-independent.
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project dev1.xcodeproj \
+            -scheme dev1 \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      # Running tests does need a real simulator, so discover one rather than
+      # assuming a name, and download a runtime only if the image has none.
+      - name: Resolve a simulator
+        id: sim
+        run: |
+          find_udid() {
+            xcrun simctl list devices available \
+              | grep "iPhone" \
+              | grep -Eio '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}' \
+              | head -1
+          }
+
+          UDID="$(find_udid)"
+
+          if [ -z "$UDID" ]; then
+            echo "No iOS simulator on this image; downloading a runtime (this is slow)."
+            xcodebuild -downloadPlatform iOS || true
+            UDID="$(find_udid)"
+          fi
+
+          if [ -z "$UDID" ]; then
+            echo "::error::Could not provision an iOS simulator on this runner."
+            exit 1
+          fi
+
+          echo "Using simulator $UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Test
+        run: |
+          xcodebuild test \
+            -project dev1.xcodeproj \
+            -scheme dev1 \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults.xcresult
+          if-no-files-found: ignore

@@ -72,6 +72,34 @@ deletion, which only removes a single row.
   aggregates the same computed properties used elsewhere (`totalCollected`,
   `totalOwed`, etc.) into a text report, shared via `ShareLink`.
 
+## Design system
+
+`Support/Theme.swift` holds every design token — brand and status colors,
+spacing and radius scales, figure typography, and the `.card()` treatment that
+gives the app its layout rhythm. Colors are declared as light/dark pairs and
+resolved through `UIColor`'s trait closure, so a single `Color` adapts to the
+active appearance and no view needs to read `@Environment(\.colorScheme)`.
+
+Two constraints in that file are **measured, not aesthetic**, and shouldn't be
+undone by a later simplification:
+
+- **Status colors always ship with an icon and a text label.** Status green and
+  status red are only ΔE 4.1 apart (OKLab ×100) under simulated deuteranopia,
+  against a ≥8 separation target. "Paid" versus "Unpaid" is exactly the
+  distinction a colorblind treasurer has to make, so hue cannot be the only
+  channel carrying it. `StatusBadge` enforces the pairing; reducing it to a
+  colored dot would reintroduce the bug.
+- **Amber measures 1.83:1 on the light surface**, below the 3:1 contrast bar.
+  Same mitigation — the label carries the meaning.
+
+The brand hue (indigo) was chosen partly to sit clear of the green/amber/red
+status family, so a brand-colored mark can never be misread as a payment state.
+
+`ExpenseBreakdownChart` uses **one color for every bar**. Expense categories are
+nominal — "Uniforms" isn't greater than "Facilities" — so a darker-where-bigger
+ramp would double-encode bar length as hue and spend the only free visual
+channel restating what the length already shows.
+
 ## Error handling
 
 Every user-initiated write (`context.save()` in the three "New…" views and

@@ -15,23 +15,62 @@ struct FamiliesListView: View {
 
     private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "FamiliesListView")
 
+    private var totalOutstanding: Decimal {
+        families.reduce(Decimal(0)) { $0 + $1.totalOwed }
+    }
+
     var body: some View {
-        List {
+        Group {
             if families.isEmpty {
-                ContentUnavailableView(
-                    "No Families Yet",
-                    systemImage: "person.2",
-                    description: Text("Add families to start tracking balances.")
-                )
-            } else {
-                ForEach(families) { family in
-                    NavigationLink(value: family) {
-                        FamilyRow(family: family)
-                    }
+                EmptyStateView(
+                    icon: "person.2.fill",
+                    title: "No families yet",
+                    message: "Add the families on your roster and TeamTreasury will track every balance for you.",
+                    actionTitle: "Add Family"
+                ) {
+                    isPresentingNewFamily = true
                 }
-                .onDelete { pendingDeleteOffsets = $0 }
+            } else {
+                List {
+                    Section {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Outstanding across roster")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(Theme.inkSecondary)
+                                Text(totalOutstanding.currencyString)
+                                    .font(Theme.figure(26, weight: .bold))
+                                    .foregroundStyle(totalOutstanding > 0 ? Theme.inkPrimary : Theme.statusGood)
+                            }
+                            Spacer()
+                            Image(systemName: totalOutstanding > 0 ? "hourglass" : "checkmark.seal.fill")
+                                .font(.system(size: 26))
+                                .foregroundStyle(totalOutstanding > 0 ? Theme.statusWarning : Theme.statusGood)
+                        }
+                        .card()
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: Theme.Space.md, leading: Theme.Space.lg,
+                                                  bottom: Theme.Space.sm, trailing: Theme.Space.lg))
+                    }
+
+                    ForEach(families) { family in
+                        ZStack {
+                            NavigationLink(value: family) { EmptyView() }.opacity(0)
+                            FamilyRow(family: family)
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: Theme.Space.sm, leading: Theme.Space.lg,
+                                                  bottom: Theme.Space.sm, trailing: Theme.Space.lg))
+                    }
+                    .onDelete { pendingDeleteOffsets = $0 }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
+        .background(Theme.plane)
         .navigationDestination(for: FamilyMember.self) { family in
             FamilyDetailView(family: family)
         }
@@ -84,23 +123,35 @@ private struct FamilyRow: View {
     let family: FamilyMember
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(family.parentName).font(.headline)
-                Text(family.playerName).font(.caption).foregroundStyle(.secondary)
+        HStack(spacing: Theme.Space.md) {
+            Avatar(name: family.parentName, size: 44)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(family.parentName)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.inkPrimary)
+                if !family.playerName.isEmpty {
+                    Text(family.playerName)
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.inkMuted)
+                }
             }
-            Spacer()
-            if family.totalOwed > 0 {
-                Text("\(family.totalOwed.currencyString) due")
-                    .font(.subheadline)
-                    .foregroundStyle(.red)
-            } else {
-                Text("Paid up")
-                    .font(.subheadline)
-                    .foregroundStyle(.green)
+
+            Spacer(minLength: Theme.Space.sm)
+
+            VStack(alignment: .trailing, spacing: 4) {
+                if family.totalOwed > 0 {
+                    Text(family.totalOwed.currencyString)
+                        .font(Theme.figure(16, weight: .bold))
+                        .foregroundStyle(Theme.inkPrimary)
+                    MetaBadge(text: "Owes", systemImage: "exclamationmark.circle.fill", tint: Theme.statusCritical)
+                } else {
+                    MetaBadge(text: "Paid up", systemImage: "checkmark.circle.fill", tint: Theme.statusGood)
+                }
             }
         }
-        .accessibilityElement(children: .combine)
+        .card()
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(family.parentName), \(family.playerName)")
         .accessibilityValue(family.totalOwed > 0 ? "\(family.totalOwed.currencyString) due" : "Paid up")
     }

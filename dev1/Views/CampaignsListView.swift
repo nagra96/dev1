@@ -16,22 +16,38 @@ struct CampaignsListView: View {
     private static let logger = Logger(subsystem: "com.teamtreasury.dev1", category: "CampaignsListView")
 
     var body: some View {
-        List {
+        Group {
             if campaigns.isEmpty {
-                ContentUnavailableView(
-                    "No Fee Campaigns",
-                    systemImage: "dollarsign.circle",
-                    description: Text("Create a campaign like \u{201C}Uniform Fee \u{2014} $150\u{201D} to start collecting.")
-                )
-            } else {
-                ForEach(campaigns) { campaign in
-                    NavigationLink(value: campaign) {
-                        CampaignRow(campaign: campaign)
-                    }
+                EmptyStateView(
+                    icon: "dollarsign.circle.fill",
+                    title: "No fee campaigns",
+                    message: "Create a campaign like \u{201C}Uniform Fee \u{2014} $150\u{201D} to start collecting from your roster.",
+                    actionTitle: "New Campaign"
+                ) {
+                    isPresentingNewCampaign = true
                 }
-                .onDelete { pendingDeleteOffsets = $0 }
+            } else {
+                List {
+                    ForEach(campaigns) { campaign in
+                        ZStack {
+                            // A zero-opacity NavigationLink keeps the row's tap
+                            // target and push behavior without painting the
+                            // system disclosure chrome over the card.
+                            NavigationLink(value: campaign) { EmptyView() }.opacity(0)
+                            CampaignRow(campaign: campaign)
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: Theme.Space.sm, leading: Theme.Space.lg,
+                                                  bottom: Theme.Space.sm, trailing: Theme.Space.lg))
+                    }
+                    .onDelete { pendingDeleteOffsets = $0 }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
+        .background(Theme.plane)
         .navigationDestination(for: FeeCampaign.self) { campaign in
             CampaignDetailView(campaign: campaign)
         }

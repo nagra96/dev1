@@ -26,26 +26,55 @@ struct ExpensesListView: View {
     }
 
     var body: some View {
-        List {
-            Section("Season Budget") {
-                LabeledContent("Total Expenses", value: totalExpenses.currencyString)
-                ForEach(expensesByCategory) { entry in
-                    LabeledContent(entry.category, value: entry.total.currencyString)
+        Group {
+            if expenses.isEmpty {
+                EmptyStateView(
+                    icon: "receipt.fill",
+                    title: "No expenses logged",
+                    message: "Track what the team spends \u{2014} uniforms, field rentals, tournament fees \u{2014} and snap a receipt while you\u{2019}re at it.",
+                    actionTitle: "Add Expense"
+                ) {
+                    isPresentingNewExpense = true
                 }
-            }
+            } else {
+                List {
+                    Section {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Season spend")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(Theme.inkSecondary)
+                            Text(totalExpenses.currencyString)
+                                .font(Theme.figure(30, weight: .bold))
+                                .foregroundStyle(Theme.inkPrimary)
+                            Text("\(expenses.count) \(expenses.count == 1 ? "entry" : "entries") across \(expensesByCategory.count) \(expensesByCategory.count == 1 ? "category" : "categories")")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Theme.inkMuted)
+                        }
+                        .card()
+                        .plainRow(top: Theme.Space.md)
 
-            Section("All Expenses") {
-                if expenses.isEmpty {
-                    Text("No expenses logged yet.")
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(expenses) { expense in
-                        ExpenseRow(expense: expense)
+                        ExpenseBreakdownChart(totals: expensesByCategory)
+                            .plainRow()
                     }
-                    .onDelete(perform: deleteExpenses)
+
+                    Section {
+                        ForEach(expenses) { expense in
+                            ExpenseRow(expense: expense)
+                                .plainRow()
+                        }
+                        .onDelete(perform: deleteExpenses)
+                    } header: {
+                        Text("All expenses")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.inkSecondary)
+                            .textCase(nil)
+                    }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
+        .background(Theme.plane)
         .navigationTitle("Expenses")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -74,46 +103,75 @@ struct ExpensesListView: View {
     }
 }
 
-private struct CategoryTotal: Identifiable {
-    let category: String
-    let total: Decimal
-    var id: String { category }
+extension View {
+    /// Strips the system list chrome so a card can sit directly on the plane.
+    func plainRow(top: CGFloat = Theme.Space.sm) -> some View {
+        self
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: top, leading: Theme.Space.lg,
+                                      bottom: Theme.Space.sm, trailing: Theme.Space.lg))
+    }
+}
+
+/// Category glyphs. Purely a visual anchor — the category name is always
+/// shown beside it, so the icon never carries meaning on its own.
+enum ExpenseCategoryStyle {
+    static func icon(for category: String) -> String {
+        switch category {
+        case "Uniforms": return "tshirt.fill"
+        case "Tournaments": return "trophy.fill"
+        case "Facilities": return "sportscourt.fill"
+        case "Equipment": return "bag.fill"
+        default: return "tag.fill"
+        }
+    }
 }
 
 private struct ExpenseRow: View {
     let expense: Expense
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Theme.Space.md) {
             if let data = expense.receiptImageData, let uiImage = UIImage(data: data) {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 40, height: 40)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Theme.hairline, lineWidth: 0.5)
+                    )
             } else {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.secondary.opacity(0.15))
-                    .frame(width: 40, height: 40)
-                    .overlay(Image(systemName: "receipt").foregroundStyle(.secondary))
+                Image(systemName: ExpenseCategoryStyle.icon(for: expense.category))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Theme.accent)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.accentMuted, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
-            VStack(alignment: .leading) {
-                Text(expense.title).font(.headline)
-                Text(expense.category).font(.caption).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(expense.title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.inkPrimary)
+                HStack(spacing: Theme.Space.xs) {
+                    Text(expense.category)
+                    Text("\u{00B7}")
+                    Text(expense.date.formatted(date: .abbreviated, time: .omitted))
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.inkMuted)
             }
 
-            Spacer()
+            Spacer(minLength: Theme.Space.sm)
 
-            VStack(alignment: .trailing) {
-                Text(expense.amount.currencyString).fontWeight(.semibold)
-                Text(expense.date.formatted(date: .abbreviated, time: .omitted))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+            Text(expense.amount.currencyString)
+                .font(Theme.figure(16, weight: .bold))
+                .foregroundStyle(Theme.inkPrimary)
         }
-        .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
+        .card()
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(expense.title), \(expense.category)")
         .accessibilityValue("\(expense.amount.currencyString) on \(expense.date.formatted(date: .abbreviated, time: .omitted))")
     }

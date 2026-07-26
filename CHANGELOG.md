@@ -29,8 +29,27 @@ loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (local IDE state that shouldn't be version-controlled).
 - Documentation: `README.md`, `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`.
 
+- Visual design system (`Support/Theme.swift`): brand palette, spacing and
+  radius scales, rounded figure typography, and a reusable card treatment.
+- Reusable UI components: `StatTile`, `ProgressMeter`, `Avatar`,
+  `StatusBadge`/`MetaBadge`, `EmptyStateView`, and `ExpenseBreakdownChart`
+  (Swift Charts, no third-party dependency).
+
 ### Changed
-- N/A (first documented pass over the initial MVP).
+- **Full interface redesign.** Replaced stock `List` styling throughout with a
+  card-based layout on a tinted plane: a hero net-balance figure and KPI tiles
+  on the dashboard, inline progress meters on campaign and payment rows,
+  monogram avatars on roster rows, category glyphs on expenses, and designed
+  empty states. The app now has a brand identity (indigo) rather than default
+  system blue.
+- Payment status is now communicated with an **icon and a text label**, not
+  color alone. This is a correctness fix, not a style choice: the status green
+  and status red measure ΔE 4.1 apart under simulated deuteranopia — far below
+  the ≥8 separation target — so "Paid" and "Unpaid" were previously
+  indistinguishable for a red-green colorblind user. Amber additionally sits at
+  1.83:1 on the light surface, under the 3:1 bar, with the same mitigation.
+- Campaign detail now sorts unpaid families to the top, since that's the
+  treasurer's actual working list.
 
 ## [0.1.0] — Initial MVP
 

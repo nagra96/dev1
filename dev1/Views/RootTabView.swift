@@ -9,10 +9,10 @@ struct RootTabView: View {
     var body: some View {
         TabView {
             NavigationStack { DashboardView() }
-                .tabItem { Label("Dashboard", systemImage: "house.fill") }
+                .tabItem { Label("Dashboard", systemImage: "chart.pie.fill") }
 
             NavigationStack { CampaignsListView() }
-                .tabItem { Label("Fee Campaigns", systemImage: "dollarsign.circle.fill") }
+                .tabItem { Label("Campaigns", systemImage: "dollarsign.circle.fill") }
 
             NavigationStack { FamiliesListView() }
                 .tabItem { Label("Families", systemImage: "person.2.fill") }
@@ -20,6 +20,7 @@ struct RootTabView: View {
             NavigationStack { ExpensesListView() }
                 .tabItem { Label("Expenses", systemImage: "receipt.fill") }
         }
+        .tint(Theme.accent)
     }
 }
 
